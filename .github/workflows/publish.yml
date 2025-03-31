@@ -6,7 +6,7 @@ on:
 
 jobs:
   main:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, idp]
     permissions:
       contents: read
       packages: write
@@ -41,3 +41,6 @@ jobs:
     with:
       environment: "release"
     secrets: inherit
+
+
+

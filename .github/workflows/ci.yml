@@ -11,7 +11,7 @@ on:
   
 jobs:
   main:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, idp]
 
     steps:
       - name: Checkout repository
@@ -30,3 +30,11 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+
+
+
+
+
+
