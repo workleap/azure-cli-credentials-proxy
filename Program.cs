@@ -47,6 +47,21 @@ app.MapPost("/token", async (HttpContext context, HttpRequest request, Cancellat
     return Results.Ok(result);
 });
 
+// az cli v2.74+: Can be consumed by "az login --identity" by specifying AZURE_POD_IDENTITY_AUTHORITY_HOST environment variable to this action URL
+// https://github.com/AzureAD/microsoft-authentication-library-for-python/blob/d49296c1b2a929a6ab11380e237daa89a5298512/msal/managed_identity.py#L473
+app.MapGet("/metadata/identity/oauth2/token", async (HttpContext context, string resource, CancellationToken cancellationToken) =>
+{
+    var token = await tokenCredential.GetTokenAsync(new TokenRequestContext([resource]), cancellationToken);
+    var result = new JsonObject()
+    {
+        ["access_token"] = token.Token,
+        ["expires_in"] = (token.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds,
+        ["token_type"] = "Bearer",
+        ["resource"] = resource,
+    };
+    return Results.Ok(result);
+});
+
 app.Run();
 
 [JsonSourceGenerationOptions]
