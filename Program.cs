@@ -15,6 +15,8 @@ var app = builder.Build();
 
 // Can be consumed by ManagedIdentityCredential by specifying IDENTITY_ENDPOINT and IMDS_ENDPOINT environment variables to this action URL
 // See https://github.com/Azure/azure-sdk-for-net/blob/Azure.Identity_1.8.0/sdk/identity/Azure.Identity/src/AzureArcManagedIdentitySource.cs
+// For supporting "az login --identity" (version >= 2.74) this can be consumed by specifying IDENTITY_ENDPOINT and IDENTITY_HEADER environment
+// variables. See https://github.com/AzureAD/microsoft-authentication-library-for-python/blob/b1d8cd71145a8b1889b490f9b0dfbe4b1ac3a7f1/msal/managed_identity.py#L437
 app.MapGet("/token", async (HttpContext context, string resource, CancellationToken cancellationToken) =>
 {
     var token = await tokenCredential.GetTokenAsync(new TokenRequestContext([resource]), cancellationToken);
@@ -29,7 +31,7 @@ app.MapGet("/token", async (HttpContext context, string resource, CancellationTo
     return Results.Ok(result);
 });
 
-// Can be consumed by "az login --identity" by specifying MSI_ENDPOINT environment variable to this action URL
+// Can be consumed by "az login --identity" (version < 2.74) by specifying MSI_ENDPOINT environment variable to this action URL
 // https://github.com/Azure/msrestazure-for-python/blob/master/msrestazure/azure_active_directory.py#L474
 app.MapPost("/token", async (HttpContext context, HttpRequest request, CancellationToken cancellationToken) =>
 {
@@ -41,21 +43,6 @@ app.MapPost("/token", async (HttpContext context, HttpRequest request, Cancellat
         ["access_token"] = token.Token,
         ["expiresOn"] = token.ExpiresOn.ToString("O", CultureInfo.InvariantCulture),
         ["expires_on"] = token.ExpiresOn.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture),
-        ["token_type"] = "Bearer",
-        ["resource"] = resource,
-    };
-    return Results.Ok(result);
-});
-
-// az cli v2.74+: Can be consumed by "az login --identity" by specifying AZURE_POD_IDENTITY_AUTHORITY_HOST environment variable to this action URL
-// https://github.com/AzureAD/microsoft-authentication-library-for-python/blob/d49296c1b2a929a6ab11380e237daa89a5298512/msal/managed_identity.py#L473
-app.MapGet("/metadata/identity/oauth2/token", async (HttpContext context, string resource, CancellationToken cancellationToken) =>
-{
-    var token = await tokenCredential.GetTokenAsync(new TokenRequestContext([resource]), cancellationToken);
-    var result = new JsonObject()
-    {
-        ["access_token"] = token.Token,
-        ["expires_in"] = (token.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds,
         ["token_type"] = "Bearer",
         ["resource"] = resource,
     };
