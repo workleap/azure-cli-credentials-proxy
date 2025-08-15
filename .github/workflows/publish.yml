@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Docker login
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
