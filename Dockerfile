@@ -16,8 +16,13 @@ ENV AZURE_CONFIG_DIR=/app/.azure
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
 WORKDIR /src
 COPY . .
-RUN dotnet publish "AzureCliCredentialProxy.csproj" -c Release -r linux-musl-x64 -o /app/publish
 
+ARG TARGETPLATFORM
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    dotnet publish "AzureCliCredentialProxy.csproj" -c Release -r linux-musl-x64 -o /app/publish; \
+    else \
+    dotnet publish "AzureCliCredentialProxy.csproj" -c Release -r linux-musl-arm64 -o /app/publish; \
+    fi
 
 FROM base AS final
 RUN chown -R app /app
