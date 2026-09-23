@@ -23,7 +23,7 @@ app.MapGet("/token", async (HttpContext context, string resource, CancellationTo
         ["access_token"] = token.Token,
         ["expiresOn"] = token.ExpiresOn.ToString("O", CultureInfo.InvariantCulture),
         ["expires_on"] = token.ExpiresOn.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture),
-        ["tokenType"] = "Bearer",
+        ["token_type"] = "Bearer",
         ["resource"] = resource,
     };
     return Results.Ok(result);
